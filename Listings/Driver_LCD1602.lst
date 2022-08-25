@@ -1,0 +1,272 @@
+C51 COMPILER V9.54   DRIVER_LCD1602                                                        08/25/2022 20:58:49 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE DRIVER_LCD1602
+OBJECT MODULE PLACED IN .\build\Driver_LCD1602.obj
+COMPILER INVOKED BY: D:\development\singleChip51\KeilC51\C51\BIN\C51.EXE src\Driver_LCD1602.c OPTIMIZE(8,SPEED) BROWSE D
+                    -EBUG OBJECTEXTEND PRINT(.\Listings\Driver_LCD1602.lst) TABS(2) OBJECT(.\build\Driver_LCD1602.obj)
+
+line level    source
+
+   1          /**
+   2           * @file Driver_LCD1602.c
+   3           * @author USST WangYJ (2035060326)
+   4           * @brief The driver of LCD1602
+   5           * @version 1.0
+   6           * @date 2022-08-23
+   7           *
+   8           *
+   9           */
+  10          
+  11          #include <regx52.h>
+  12          #include <intrins.h>
+  13          #include "Delay.h"
+  14          
+  15          sbit LCD_RS = P2 ^ 6;
+  16          sbit LCD_RW = P2 ^ 5;
+  17          sbit LCD_EN = P2 ^ 7;
+  18          #define LCD_DP P0
+  19          
+  20          /**
+  21           * @brief  LCD1602 Write command
+  22           * @param  Command The command to be written
+  23           * @retval void
+  24           */
+  25          void LCD_WriteCommand(unsigned char Command)
+  26          {
+  27   1        LCD_RS = 0;
+  28   1        LCD_RW = 0;
+  29   1        LCD_DP = Command;
+  30   1        LCD_EN = 1;
+  31   1        Delayms(1);
+  32   1        LCD_EN = 0;
+  33   1        Delayms(1);
+  34   1      }
+  35          
+  36          /**
+  37           * @brief  LCD1602 Write data
+  38           * @param  Data The data to be written
+  39           * @retval void
+  40           */
+  41          void LCD_WriteData(unsigned char Data)
+  42          {
+  43   1        LCD_RS = 1;
+  44   1        LCD_RW = 0;
+  45   1        LCD_DP = Data;
+  46   1        LCD_EN = 1;
+  47   1        Delayms(1);
+  48   1        LCD_EN = 0;
+  49   1        Delayms(1);
+  50   1      }
+  51          
+  52          /**
+  53           * @brief  LCD1602 set cursor pos
+  54           * @param  Line row position. Ranges from 1 to 2
+C51 COMPILER V9.54   DRIVER_LCD1602                                                        08/25/2022 20:58:49 PAGE 2   
+
+  55           * @param  Column col position. Ranges from 1 to 16
+  56           * @retval void
+  57           */
+  58          void LCD_SetCursor(unsigned char Line, unsigned char Column)
+  59          {
+  60   1        if (Line == 1)
+  61   1        {
+  62   2          LCD_WriteCommand(0x80 | (Column - 1));
+  63   2        }
+  64   1        else if (Line == 2)
+  65   1        {
+  66   2          LCD_WriteCommand(0x80 | (Column - 1 + 0x40));
+  67   2        }
+  68   1      }
+  69          
+  70          /**
+  71           * @brief  LCD1602 init settings
+  72           * @param  NA
+  73           * @retval void
+  74           */
+  75          void LCD_Init()
+  76          {
+  77   1        LCD_WriteCommand(0x38); // 8 bit. 2 lines. 5*7 matrix.
+  78   1        LCD_WriteCommand(0x0c); // display on. cursor off. flash off.
+  79   1        LCD_WriteCommand(0x06); // cursot move right.
+  80   1        LCD_WriteCommand(0x01); // clear.
+  81   1      }
+  82          
+  83          /**
+  84           * @brief  Show certain character
+  85           * @param  Line row position. Ranges from 1 to 2
+  86           * @param  Column col position. Ranges from 1 to 16
+  87           * @param  Char Character to be shown
+  88           * @retval void
+  89           */
+  90          void LCD_ShowChar(unsigned char Line, unsigned char Column, char Char)
+  91          {
+  92   1        LCD_SetCursor(Line, Column);
+  93   1        LCD_WriteData(Char);
+  94   1      }
+  95          
+  96          /**
+  97           * @brief  Show certain string
+  98           * @param  Line row position. Ranges from 1 to 2
+  99           * @param  Column col position. Ranges from 1 to 16
+ 100           * @param  string String to be shown
+ 101           * @retval void
+ 102           */
+ 103          void LCD_ShowString(unsigned char Line, unsigned char Column, char *String)
+ 104          {
+ 105   1        unsigned char i;
+ 106   1        LCD_SetCursor(Line, Column);
+ 107   1        for (i = 0; String[i] != '\0'; i++)
+ 108   1        {
+ 109   2          LCD_WriteData(String[i]);
+ 110   2        }
+ 111   1      }
+ 112          
+ 113          /**
+ 114           * @brief  Carmichael Numbers for LCD_Pow. It's just a roast->快速幂 IS POWER!!!!!!!!!!!!! 某noi教练
+             -如是说
+ 115           * @param  X truth
+C51 COMPILER V9.54   DRIVER_LCD1602                                                        08/25/2022 20:58:49 PAGE 3   
+
+ 116           * @param  Y power
+ 117           * @retval An integer, presented as X^Y.
+ 118           */
+ 119          int LCD_Pow(int X, int Y)
+ 120          {
+ 121   1        int ret = 1;
+ 122   1        if (X == 0)
+ 123   1          ret = 0;
+ 124   1        else if (Y == 0 && X != 1)
+ 125   1        {
+ 126   2          ret = 1;
+ 127   2        }
+ 128   1        else
+ 129   1        {
+ 130   2          while (Y != 0)
+ 131   2          {
+ 132   3            if (Y & 1)
+ 133   3              ret *= X;
+ 134   3            X *= X;
+ 135   3            Y >>= 1;
+ 136   3          }
+ 137   2        }
+ 138   1        return ret;
+ 139   1      }
+ 140          
+ 141          /**
+ 142           * @brief  Show certain number(unsigned)
+ 143           * @param  Line row position. Ranges from 1 to 2
+ 144           * @param  Column col position. Ranges from 1 to 16
+ 145           * @param  Number Number(Integer) to be shown. Ranges from 0 to 65535
+ 146           * @param  Length length of number.Ranges form 1 to 5
+ 147           * @retval void
+ 148           */
+ 149          void LCD_ShowNum(unsigned char Line, unsigned char Column, unsigned int Number, unsigned char Length)
+ 150          {
+ 151   1        unsigned char i;
+ 152   1        LCD_SetCursor(Line, Column);
+ 153   1        for (i = Length; i > 0; i--)
+ 154   1        {
+ 155   2          LCD_WriteData(Number / LCD_Pow(10, i - 1) % 10 + '0');
+ 156   2        }
+ 157   1      }
+ 158          
+ 159          /**
+ 160           * @brief  Show certain number(signed)
+ 161           * @param  Line row position. Ranges from 1 to 2
+ 162           * @param  Column col position. Ranges from 1 to 16
+ 163           * @param  Number Number(Integer) to be shown. Ranges from -32768 to 32767
+ 164           * @param  Length length of number.Ranges form 1 to 5
+ 165           * @retval void
+ 166           */
+ 167          void LCD_ShowSignedNum(unsigned char Line, unsigned char Column, int Number, unsigned char Length)
+ 168          {
+ 169   1        unsigned char i;
+ 170   1        unsigned int Number1;
+ 171   1        LCD_SetCursor(Line, Column);
+ 172   1        if (Number >= 0)
+ 173   1        {
+ 174   2          LCD_WriteData('+');
+ 175   2          Number1 = Number;
+ 176   2        }
+ 177   1        else
+C51 COMPILER V9.54   DRIVER_LCD1602                                                        08/25/2022 20:58:49 PAGE 4   
+
+ 178   1        {
+ 179   2          LCD_WriteData('-');
+ 180   2          Number1 = -Number;
+ 181   2        }
+ 182   1        for (i = Length; i > 0; i--)
+ 183   1        {
+ 184   2          LCD_WriteData(Number1 / LCD_Pow(10, i - 1) % 10 + '0');
+ 185   2        }
+ 186   1      }
+ 187          
+ 188          /**
+ 189           * @brief  Show certain number(Hex)
+ 190           * @param  Line row position. Ranges from 1 to 2
+ 191           * @param  Column col position. Ranges from 1 to 16
+ 192           * @param  Number Number(Hex) to be shown. Ranges from 0 to 0xFFFF
+ 193           * @param  Length length of number. Ranges form 1 to 4
+ 194           * @retval void
+ 195           */
+ 196          void LCD_ShowHexNum(unsigned char Line, unsigned char Column, unsigned int Number, unsigned char Length)
+ 197          {
+ 198   1        unsigned char i, SingleNumber;
+ 199   1        LCD_SetCursor(Line, Column);
+ 200   1        for (i = Length; i > 0; i--)
+ 201   1        {
+ 202   2          SingleNumber = Number / LCD_Pow(16, i - 1) % 16;
+ 203   2          if (SingleNumber < 10)
+ 204   2          {
+ 205   3            LCD_WriteData(SingleNumber + '0');
+ 206   3          }
+ 207   2          else
+ 208   2          {
+ 209   3            LCD_WriteData(SingleNumber - 10 + 'A');
+ 210   3          }
+ 211   2        }
+ 212   1      }
+ 213          
+ 214          /**
+ 215           * @brief  Show certain number(Bineary)
+ 216           *@param  Line row position. Ranges from 1 to 2
+ 217           * @param  Column col position. Ranges from 1 to 16
+ 218           * @param  Number Number to be shown. Ranges from 0 to 1111 1111 1111 1111b
+ 219           * @param  Length length of number. Ranges form 1 to 16
+ 220           * @retval void
+ 221           */
+ 222          void LCD_ShowBinNum(unsigned char Line, unsigned char Column, unsigned int Number, unsigned char Length)
+ 223          {
+ 224   1        unsigned char i;
+ 225   1        LCD_SetCursor(Line, Column);
+ 226   1        for (i = Length; i > 0; i--)
+ 227   1        {
+ 228   2          LCD_WriteData(Number / LCD_Pow(2, i - 1) % 2 + '0');
+ 229   2        }
+ 230   1      }
+ 231          
+ 232          /**
+ 233           * @brief Clear LCD
+ 234           */
+ 235          void LCD_Clear()
+ 236          {
+ 237   1        LCD_ShowString(1,1,"                ");
+ 238   1        LCD_ShowString(2,1,"                ");
+ 239   1      }
+C51 COMPILER V9.54   DRIVER_LCD1602                                                        08/25/2022 20:58:49 PAGE 5   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    537    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      36
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

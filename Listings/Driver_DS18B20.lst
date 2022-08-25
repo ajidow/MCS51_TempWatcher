@@ -1,0 +1,80 @@
+C51 COMPILER V9.54   DRIVER_DS18B20                                                        08/25/2022 20:58:50 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE DRIVER_DS18B20
+OBJECT MODULE PLACED IN .\build\Driver_DS18B20.obj
+COMPILER INVOKED BY: D:\development\singleChip51\KeilC51\C51\BIN\C51.EXE src\Driver_DS18B20.c OPTIMIZE(8,SPEED) BROWSE D
+                    -EBUG OBJECTEXTEND PRINT(.\Listings\Driver_DS18B20.lst) TABS(2) OBJECT(.\build\Driver_DS18B20.obj)
+
+line level    source
+
+   1          /**
+   2           * @file Driver_DS18B20.c
+   3           * @author WangYJ
+   4           * @brief Driver for DS18B20. DS18B20 is a thermometer.
+   5           * @version 1.0
+   6           * @date 2021-05-13
+   7           * 
+   8           * @copyright Copyright (c) 2021
+   9           * 
+  10           */
+  11          
+  12          #include <regx52.h>
+  13          #include "SingleWire.h"
+  14          
+  15          // DS18B20 commands
+  16          #define DS18B20_SKIP_ROM 0xCC
+  17          #define DS18B20_CONVERT_T 0x44
+  18          #define DS18B20_READ_SCRATCHPAD 0xBE
+  19          
+  20          /**
+  21           * @brief  DS18B20 Start converting temperature
+  22           * @param  na
+  23           * @retval void
+  24           */
+  25          void DS18B20_ConvertT(void)
+  26          {
+  27   1        SingleWire_Init();
+  28   1        SingleWire_SendByte(DS18B20_SKIP_ROM);
+  29   1        SingleWire_SendByte(DS18B20_CONVERT_T);
+  30   1      }
+  31          
+  32          /**
+  33           * @brief  DS18B20 Read temperature
+  34           * @param  na
+  35           * @retval Float. Referring temperature.
+  36           */
+  37          float DS18B20_ReadT(void)
+  38          {
+  39   1        unsigned char TLSB, TMSB;
+  40   1        int Temp;
+  41   1        float T;
+  42   1      
+  43   1        SingleWire_Init();
+  44   1        SingleWire_SendByte(DS18B20_SKIP_ROM);
+  45   1        SingleWire_SendByte(DS18B20_READ_SCRATCHPAD);
+  46   1      
+  47   1        TLSB = SingleWire_ReceiveByte();
+  48   1        TMSB = SingleWire_ReceiveByte();
+  49   1      
+  50   1        Temp = (TMSB << 8) | TLSB;
+  51   1        T = Temp / 16.0;
+  52   1        
+  53   1        return T;
+  54   1      }
+C51 COMPILER V9.54   DRIVER_DS18B20                                                        08/25/2022 20:58:50 PAGE 2   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     57    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
