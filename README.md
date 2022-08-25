@@ -1,4 +1,4 @@
-# MSC51_TempWatcher
+# MCS51_TempWatcher
 
 An industrial-grade thermometer based on MSC51 core, with the function of saving and uploading data.
 
