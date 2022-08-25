@@ -52,3 +52,6 @@ dkms.conf
 
 #keil 
 *.__i
+
+#vscode
+.vscode
