@@ -52,6 +52,7 @@ dkms.conf
 
 #keil 
 *.__i
-
+*.htm
+*.lnp
 #vscode
 .vscode
