@@ -51,11 +51,20 @@ unsigned char AT24C02_ReadByte(unsigned char Address)
 	I2C_Start();
 	I2C_SendByte(AT24C02_ADDRESS);
 	I2C_ReceiveAck();
+	ACKbit = I2C_ReceiveAck();
+	if(!ACKbit)
+		return;
 	I2C_SendByte(Address);
 	I2C_ReceiveAck();
+	ACKbit = I2C_ReceiveAck();
+	if(!ACKbit)
+		return;
 	I2C_Start();
 	I2C_SendByte(AT24C02_ADDRESS|0x01);
 	I2C_ReceiveAck();
+	ACKbit = I2C_ReceiveAck();
+	if(!ACKbit)
+		return;
 	Data=I2C_ReceiveByte();
 	I2C_SendAck(1);
 	I2C_Stop();
