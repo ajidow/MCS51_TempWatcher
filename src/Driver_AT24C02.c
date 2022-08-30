@@ -21,13 +21,22 @@
   */
 void AT24C02_WriteByte(unsigned char Address,unsigned char Data)
 {
+	unsigned char ACKbit;
 	I2C_Start();
 	I2C_SendByte(AT24C02_ADDRESS);
-	I2C_ReceiveAck();
+	ACKbit = I2C_ReceiveAck();
+	if(!ACKbit)
+		return;
 	I2C_SendByte(Address);
 	I2C_ReceiveAck();
+	ACKbit = I2C_ReceiveAck();
+	if(!ACKbit)
+		return;
 	I2C_SendByte(Data);
 	I2C_ReceiveAck();
+	ACKbit = I2C_ReceiveAck();
+	if(!ACKbit)
+		return;
 	I2C_Stop();
 }
 
